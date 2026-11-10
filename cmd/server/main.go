@@ -8,6 +8,7 @@ import (
 func main() {
 	router := gin.Default()
 	router.GET("/api/urls", handlers.GetUrls)
+	router.POST("/api/urls", handlers.PostUrl)
 
-	router.Run("localhost:8080")
+	router.Run(":8080")
 }
