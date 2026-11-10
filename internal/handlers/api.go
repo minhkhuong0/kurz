@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type CreateUrlRequest struct{
+type CreateUrlRequest struct {
 	Url string `json:"url"`
 }
 
@@ -25,15 +25,15 @@ func PostUrl(c *gin.Context) {
 	var rq CreateUrlRequest
 	if err := c.BindJSON(&rq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-            "error": "Invalid JSON: " + err.Error(),
-        })
-        return
+			"error": "Invalid JSON: " + err.Error(),
+		})
+		return
 	}
 
-	if rq.Url == ""{
+	if rq.Url == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-            "error": "Invalid request body: Field 'url' is required",
-        })
+			"error": "Invalid request body: Field 'url' is required",
+		})
 		return
 	}
 
