@@ -34,8 +34,8 @@ pipeline {
   }
 
   environment {
-        DOCKER_CONFIG = "${WORKSPACE}"
-    }
+    DOCKER_CONFIG = "${WORKSPACE}"
+  }
 
   stages {
     stage('Check go formatting') {
@@ -89,6 +89,25 @@ pipeline {
               --local dockerfile=. \
               --output type=image,name=forge.nhmk.de/khuong/kurz:${GIT_COMMIT},push=true
             '''
+        }
+      }
+    }
+    stage('Update GitOps repo') {
+      steps {
+        sshagent(credentials: ['jenkins-github']) {
+          sh '''
+            git config --global user.name "Jenkins CI"
+            git config --global user.email "khuong.nguyen@tutamail.com"
+
+            git clone git@github.com:minhkhuong0/homelab-iac.git
+            cd homelab-iac
+
+            sed -i "s/Tag:.*/Tag: ${GIT_COMMIT}/g" deploy/kurz/dev/kustomization.yaml
+
+            git add deploy/kurz/dev/kustomization.yaml
+            git commit -m "ci: update image tag to ${GIT_COMMIT}"
+            git push origin main
+          '''
         }
       }
     }
