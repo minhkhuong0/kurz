@@ -96,6 +96,7 @@ pipeline {
       steps {
         sshagent(credentials: ['jenkins-github']) {
           sh '''
+            GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
             ssh git@github.com
             git config --global user.name "Jenkins CI"
             git config --global user.email "khuong.nguyen@tutamail.com"
