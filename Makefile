@@ -12,7 +12,7 @@ api:
 	@echo "Building Go server"
 	CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(APP_NAME) ./cmd/server
 
-build-image:
+image:
 	@echo "Building Docker image"
 	docker build . -t kurz:latest
 

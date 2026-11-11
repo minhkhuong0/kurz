@@ -29,6 +29,7 @@ func main() {
 
 	router := gin.Default()
 	router.GET("/api/urls", handlers.GetUrls)
+	router.GET(":code", handlers.Redirect)
 	router.POST("/api/urls", handlers.PostUrl)
 
 	router.Run(":4392")

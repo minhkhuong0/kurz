@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"forge.nhmk.de/khuong/kurz/internal/tools"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -38,4 +39,22 @@ func PostUrl(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusCreated, rq)
+}
+
+func GetUrl(code string) (string, error) {
+	for _, v := range shortUrls {
+		if v.Code == code {
+			return v.Url, nil
+		}
+	}
+	return "", errors.New("Code not found")
+}
+
+func Redirect(c *gin.Context) {
+	code := c.Param("code")
+	url, err := GetUrl(code)
+	if err != nil {
+		c.String(http.StatusNotFound, "404 page not found\n")
+	}
+	c.Redirect(http.StatusMovedPermanently, url)
 }

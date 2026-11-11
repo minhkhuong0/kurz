@@ -105,7 +105,6 @@ pipeline {
 
             git clone git@github.com:minhkhuong0/homelab-iac.git
             cd homelab-iac/kubernetes/deploy/kurz/dev
-            ls -al
 
             sed -i "s/Tag:.*/Tag: ${GIT_COMMIT}/g" kustomization.yaml
 
