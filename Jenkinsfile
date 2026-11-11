@@ -93,6 +93,9 @@ pipeline {
       }
     }
     stage('Update GitOps repo') {
+      when {
+        branch 'main'
+      }
       steps {
         sshagent(credentials: ['jenkins-github']) {
           sh '''
