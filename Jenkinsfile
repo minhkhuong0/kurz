@@ -12,9 +12,30 @@ pipeline {
               - sleep
             args:
               - 99d
-        '''
+          - name: buildkitd
+            image: moby/buildkit:master-rootless
+            args:
+              - --oci-worker-no-process-sandbox
+            securityContext:
+              seccompProfile:
+                type: Unconfined
+              appArmorProfile:
+                type: Unconfined
+              runAsUser: 1000
+              runAsGroup: 1000
+            volumeMounts:
+              - mountPath: /home/user/.local/share/buildkit
+                name: buildkitd
+          volumes:
+            - name: buildkitd
+              emptyDir: {}
+          '''
     }
   }
+
+  environment {
+        DOCKER_CONFIG = "${WORKSPACE}"
+    }
 
   stages {
     stage('Check go formatting') {
@@ -26,7 +47,7 @@ pipeline {
             if [ -n "$UNFORMATTED" ]; then
               echo "ERROR: go files not formatted correctly:"
               echo "$UNFORMATTED"
-              echo Run "gofmt -w" . before pushing.
+              echo Run "gofmt -w ." before pushing.
               exit 1
             else
               echo "Code is correctly formatted."
@@ -38,7 +59,36 @@ pipeline {
     stage('Build api server') {
       steps {
         container('golang') {
-          sh 'go build -o bin/server ./cmd/server'
+          sh 'apk add --no-cache make'
+          sh 'make api'
+        }
+      }
+    }
+    stage('Build and push Docker image') {
+      environment {
+        FORGEJO_TOKEN = credentials('khuong-forge-pat')
+      }
+      steps {
+        container('buildkitd') {
+          sh '''
+            AUTH=$(echo -n "khuong:$FORGEJO_TOKEN" | base64 -w 0)
+
+            printf '{
+  "auths": {
+    "forge.nhmk.de": {
+      "auth": "%s"
+    }
+  }
+}
+' "$AUTH" > "$DOCKER_CONFIG/config.json"
+            '''
+          sh '''
+            buildctl build \
+              --frontend=dockerfile.v0 \
+              --local context=. \
+              --local dockerfile=. \
+              --output type=image,name=forge.nhmk.de/khuong/kurz:${GIT_COMMIT},push=true
+            '''
         }
       }
     }
