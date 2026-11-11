@@ -102,6 +102,9 @@ pipeline {
 
             git clone git@github.com:minhkhuong0/homelab-iac.git
             cd homelab-iac
+            ls -al
+            ls -al deploy
+            ls -al deploy/kurz
 
             sed -i "s/Tag:.*/Tag: ${GIT_COMMIT}/g" deploy/kurz/dev/kustomization.yaml
 
