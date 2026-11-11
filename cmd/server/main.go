@@ -31,5 +31,5 @@ func main() {
 	router.GET("/api/urls", handlers.GetUrls)
 	router.POST("/api/urls", handlers.PostUrl)
 
-	router.Run(":8080")
+	router.Run(":4392")
 }
