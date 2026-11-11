@@ -101,14 +101,12 @@ pipeline {
             git config --global user.email "khuong.nguyen@tutamail.com"
 
             git clone git@github.com:minhkhuong0/homelab-iac.git
-            cd homelab-iac
+            cd homelab-iac/kubernetes/deploy/kurz/dev
             ls -al
-            ls -al deploy
-            ls -al deploy/kurz
 
-            sed -i "s/Tag:.*/Tag: ${GIT_COMMIT}/g" deploy/kurz/dev/kustomization.yaml
+            sed -i "s/Tag:.*/Tag: ${GIT_COMMIT}/g" kustomization.yaml
 
-            git add deploy/kurz/dev/kustomization.yaml
+            git add kustomization.yaml
             git commit -m "ci: update image tag to ${GIT_COMMIT}"
             git push origin main
           '''
