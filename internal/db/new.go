@@ -39,11 +39,9 @@ func NewRepository(connUrl string) (UrlRepository, error) {
 		connUrl,
 	)
 	if err != nil {
-		pool.Close()
 		return nil, fmt.Errorf("Migration init error: %w", err)
 	}
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		pool.Close()
 		return nil, fmt.Errorf("Migration error: %w", err)
 	}
 

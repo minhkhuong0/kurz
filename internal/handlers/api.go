@@ -1,25 +1,33 @@
 package handlers
 
 import (
-	"errors"
-	"forge.nhmk.de/khuong/kurz/internal/tools"
+	//"errors"
+	"forge.nhmk.de/khuong/kurz/internal/db"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"time"
+	"log"
+	"context"
 )
 
 type CreateUrlRequest struct {
 	Url string `json:"url"`
 }
 
-var shortUrls = []tools.ShortUrl{
-	{Code: "abc", Url: "https://nhmk.de", ExpiresAt: time.Now()},
-	{Code: "aaa", Url: "https://github.com", ExpiresAt: time.Now()},
-	{Code: "zxc", Url: "https://example.org", ExpiresAt: time.Now()},
+type Handler struct {
+	Repo db.UrlRepository
 }
 
-func GetUrls(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, shortUrls)
+func (h *Handler) GetUrls(c *gin.Context) {
+	ctx := context.Background()
+	urls, err := h.Repo.ListUrls(ctx)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"error": "Internal database error",
+		})
+		log.Printf("Error getting urls from database: %v", err)
+		return
+	}
+	c.JSON(http.StatusOK, urls)
 }
 
 func PostUrl(c *gin.Context) {
@@ -41,21 +49,21 @@ func PostUrl(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, rq)
 }
 
-func GetUrl(code string) (string, error) {
-	for _, v := range shortUrls {
-		if v.Code == code {
-			return v.Url, nil
-		}
-	}
-	return "", errors.New("Code not found")
-}
-
-func Redirect(c *gin.Context) {
-	code := c.Param("code")
-	url, err := GetUrl(code)
-	if err != nil {
-		c.String(http.StatusNotFound, "404 page not found\n")
-		return
-	}
-	c.Redirect(http.StatusMovedPermanently, url)
-}
+// func GetUrl(code string) (string, error) {
+// 	for _, v := range shortUrls {
+// 		if v.Code == code {
+// 			return v.Url, nil
+// 		}
+// 	}
+// 	return "", errors.New("Code not found")
+// }
+//
+// func Redirect(c *gin.Context) {
+// 	code := c.Param("code")
+// 	url, err := GetUrl(code)
+// 	if err != nil {
+// 		c.String(http.StatusNotFound, "404 page not found\n")
+// 		return
+// 	}
+// 	c.Redirect(http.StatusMovedPermanently, url)
+// }
