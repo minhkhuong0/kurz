@@ -12,6 +12,6 @@ INSERT INTO shorturls (
 VALUES ($1, $2, $3, $3)
 RETURNING *;
 
--- name: DeleteURL :exec
+-- name: DeleteUrl :exec
 DELETE FROM shorturls
 WHERE code = $1;

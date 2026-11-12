@@ -8,12 +8,7 @@ import (
 	"context"
 	"os"
 	"forge.nhmk.de/khuong/kurz/internal/repository"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
-	"errors"
-	"github.com/golang-migrate/migrate/v4"
-    _ "github.com/golang-migrate/migrate/v4/database/postgres"
-    _ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 var (
@@ -49,26 +44,12 @@ func main() {
 	ctx := context.Background()
 
 	connUrl := os.Getenv("POSTGRESQL_URL")
-	pool, err := pgxpool.New(context.Background(), connUrl)
+
+	repo, err := repository.NewRepository(connUrl)
 	if err != nil {
-		log.Fatalf("Can't connect to database: %v", err)
-		os.Exit(1)
-	}
-	defer pool.Close()
-
-	m, err := migrate.New(
-		"file://db/postgres/migrations",
-		connUrl,
-	)
-	if err != nil {
-		log.Fatalf("Migration init error: %v", err)
-	}
-	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatalf("Migration error: %v", err)
+		log.Fatalf("Can't start database: %v", err)
 	}
 
-
-	repo := repository.New(pool)
 	urls, _ := repo.ListUrls(ctx)
 	fmt.Print(urls)
 
