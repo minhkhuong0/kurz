@@ -1,4 +1,4 @@
-package repository
+package db
 
 import (
 	"context"
@@ -8,18 +8,19 @@ import (
 	"github.com/golang-migrate/migrate/v4"
     _ "github.com/golang-migrate/migrate/v4/database/postgres"
     _ "github.com/golang-migrate/migrate/v4/source/file"
+	"forge.nhmk.de/khuong/kurz/internal/repository"
 )
 
 type UrlRepository interface {
-	GetUrl(ctx context.Context, code string) (Shorturl, error)
-	CreateUrl(ctx context.Context, params CreateUrlParams) (Shorturl, error)
-	ListUrls(ctx context.Context) ([]Shorturl, error)
+	GetUrl(ctx context.Context, code string) (repository.Shorturl, error)
+	CreateUrl(ctx context.Context, params repository.CreateUrlParams) (repository.Shorturl, error)
+	ListUrls(ctx context.Context) ([]repository.Shorturl, error)
 	DeleteUrl(ctx context.Context, code string) error
 	Close()
 }
 
 type PostgresRepo struct {
-	*Queries
+	*repository.Queries
 	pool *pgxpool.Pool
 }
 
@@ -47,7 +48,7 @@ func NewRepository(connUrl string) (UrlRepository, error) {
 	}
 
 	return &PostgresRepo {
-		Queries: New(pool),
+		Queries: repository.New(pool),
 		pool: pool,
 	}, nil
 }

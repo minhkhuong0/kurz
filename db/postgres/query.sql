@@ -9,7 +9,7 @@ ORDER BY created_at;
 -- name: CreateUrl :one
 INSERT INTO shorturls (
   code, url, created_at, expires_at )
-VALUES ($1, $2, $3, $3)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: DeleteUrl :exec

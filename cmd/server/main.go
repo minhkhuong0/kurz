@@ -7,7 +7,7 @@ import (
 	// "github.com/gin-gonic/gin"
 	"context"
 	"os"
-	"forge.nhmk.de/khuong/kurz/internal/repository"
+	"forge.nhmk.de/khuong/kurz/internal/db"
 	"log"
 )
 
@@ -45,7 +45,7 @@ func main() {
 
 	connUrl := os.Getenv("POSTGRESQL_URL")
 
-	repo, err := repository.NewRepository(connUrl)
+	repo, err := db.NewRepository(connUrl)
 	if err != nil {
 		log.Fatalf("Can't start database: %v", err)
 	}
