@@ -27,7 +27,7 @@ func (h *Handler) GetUrls(c *gin.Context) {
 		log.Printf("Error getting urls from database: %v", err)
 		return
 	}
-	c.JSON(http.StatusOK, urls)
+	c.IndentedJSON(http.StatusOK, urls)
 }
 
 func PostUrl(c *gin.Context) {
