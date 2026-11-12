@@ -1,21 +1,12 @@
 package tools
 
 import (
-	"time"
+	"context"
 )
 
-type ShortUrl struct {
-	Code      string    `json:"code"`
-	Url       string    `json:"url"`
-	ExpiresAt time.Time `json:"expires_at"`
+type UrlReposityory interface {
+	GetUrl(ctx context.Context, code string) (string, error)
+	CreateUrl(ctx context.Context, url string) (string, error)
+	DeleteUrl(ctx context.Context, code string) (string, error)
 }
 
-type DataBaseInterface interface {
-	GetUrl(code string) *ShortUrl
-	PutUrl(url string) *ShortUrl
-	SetupDatabase() error
-}
-
-func SetupDatabase() error {
-	db, err := sql.Open(v5,)
-}
