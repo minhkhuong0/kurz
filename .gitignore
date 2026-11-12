@@ -5,6 +5,8 @@
 !*.go
 !go.sum
 !go.mod
+!*.sql
+!*.yaml
 
 !README.md
 !LICENSE
@@ -12,3 +14,5 @@
 !*file
 
 !*/
+
+internal/db/*.go

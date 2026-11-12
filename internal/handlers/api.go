@@ -55,6 +55,7 @@ func Redirect(c *gin.Context) {
 	url, err := GetUrl(code)
 	if err != nil {
 		c.String(http.StatusNotFound, "404 page not found\n")
+		return
 	}
 	c.Redirect(http.StatusMovedPermanently, url)
 }

@@ -11,7 +11,11 @@ type ShortUrl struct {
 }
 
 type DataBaseInterface interface {
-	GetLongUrl(code string) *ShortUrl
-	PutShortUrl(url string) *ShortUrl
+	GetUrl(code string) *ShortUrl
+	PutUrl(url string) *ShortUrl
 	SetupDatabase() error
+}
+
+func SetupDatabase() error {
+	db, err := sql.Open(v5,)
 }
