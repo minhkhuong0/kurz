@@ -3,18 +3,27 @@ package handlers
 import (
 	//"errors"
 	"forge.nhmk.de/khuong/kurz/internal/db"
+	"forge.nhmk.de/khuong/kurz/internal/repository"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"log"
 	"context"
 )
 
-type CreateUrlRequest struct {
-	Url string `json:"url"`
-}
-
 type Handler struct {
 	Repo db.UrlRepository
+}
+
+type postUrlRequest struct {
+	Url string `json:"url" binding:"required"`
+	Ttl string `json:"ttl"`
+}
+
+func ToTimestamp(t time.Time) pgtype.Timestamp {
+    if t.IsZero() {
+        return pgtype.Timestamp{Valid: false}
+    }
+    return pgtype.Timestamp{Time: t, Valid: true}
 }
 
 func (h *Handler) GetUrls(c *gin.Context) {
@@ -30,13 +39,18 @@ func (h *Handler) GetUrls(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, urls)
 }
 
-func PostUrl(c *gin.Context) {
-	var rq CreateUrlRequest
+func (h *Handler) PostUrl(c *gin.Context) {
+	var rq repository.CreateUrlParams
 	if err := c.BindJSON(&rq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Invalid JSON: " + err.Error(),
 		})
 		return
+	}
+	ctx := context.Background()
+	urls, err := h.Repo.ListUrls(ctx)
+	if err != nil {
+		c.JSON(http.Status
 	}
 
 	if rq.Url == "" {
