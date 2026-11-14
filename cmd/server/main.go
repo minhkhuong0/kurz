@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"forge.nhmk.de/khuong/kurz/internal/db"
 	"forge.nhmk.de/khuong/kurz/internal/handlers"
 	"github.com/gin-gonic/gin"
+	"log"
+	"os"
 )
 
 var (
@@ -12,6 +15,16 @@ var (
 	GitCommit = "unknown"
 	BuildDate = "unknown"
 )
+
+func route(h *handlers.Handler) {
+	router := gin.Default()
+	router.GET("/api/url", h.GetUrls)
+	router.POST("/api/url", h.PostUrl)
+
+	// router.GET(":code", h.Redirect)
+
+	router.Run(":4392")
+}
 
 func main() {
 	const (
@@ -27,10 +40,13 @@ func main() {
 		return
 	}
 
-	router := gin.Default()
-	router.GET("/api/urls", handlers.GetUrls)
-	router.GET(":code", handlers.Redirect)
-	router.POST("/api/urls", handlers.PostUrl)
+	connUrl := os.Getenv("POSTGRESQL_URL")
 
-	router.Run(":4392")
+	repo, err := db.NewRepository(connUrl)
+	if err != nil {
+		log.Fatalf("Can't start database: %v", err)
+	}
+	defer repo.Close()
+
+	route(&handlers.Handler{Repo: repo})
 }
