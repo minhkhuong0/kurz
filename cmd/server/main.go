@@ -21,7 +21,7 @@ func route(h *handlers.Handler) {
 	router.GET("/api/url", h.GetUrls)
 	router.POST("/api/url", h.PostUrl)
 
-	// router.GET(":code", h.Redirect)
+	router.GET(":code", h.Redirect)
 
 	router.Run(":4392")
 }

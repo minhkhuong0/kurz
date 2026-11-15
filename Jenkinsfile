@@ -109,7 +109,7 @@ pipeline {
             sed -i "s/Tag:.*/Tag: ${GIT_COMMIT}/g" kustomization.yaml
 
             git add kustomization.yaml
-            git commit -m "ci: update image tag to ${GIT_COMMIT}"
+            git commit -m "ci: update kurz image tag to ${GIT_COMMIT}"
             git push origin main
           '''
         }

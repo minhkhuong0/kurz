@@ -3,6 +3,7 @@ package handlers
 import (
 	//"errors"
 	"context"
+	"fmt"
 	"forge.nhmk.de/khuong/kurz/internal/db"
 	"forge.nhmk.de/khuong/kurz/internal/repository"
 	"github.com/gin-gonic/gin"
@@ -67,21 +68,21 @@ func (h *Handler) PostUrl(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, shortUrl)
 }
 
-// func GetUrl(code string) (string, error) {
-// 	for _, v := range shortUrls {
-// 		if v.Code == code {
-// 			return v.Url, nil
-// 		}
-// 	}
-// 	return "", errors.New("Code not found")
-// }
-//
-// func Redirect(c *gin.Context) {
-// 	code := c.Param("code")
-// 	url, err := GetUrl(code)
-// 	if err != nil {
-// 		c.String(http.StatusNotFound, "404 page not found\n")
-// 		return
-// 	}
-// 	c.Redirect(http.StatusMovedPermanently, url)
-// }
+func (h *Handler) retrieveCode(code string) (string, error) {
+	ctx := context.Background()
+	url, err := h.Repo.GetUrl(ctx, code)
+	if err != nil {
+		return "", fmt.Errorf("Code not in database: %w", err)
+	}
+	return url.Url, nil
+}
+
+func (h *Handler) Redirect(c *gin.Context) {
+	code := c.Param("code")
+	url, err := h.retrieveCode(code)
+	if err != nil {
+		c.String(http.StatusNotFound, "404 page not found\n")
+		return
+	}
+	c.Redirect(http.StatusMovedPermanently, url)
+}
