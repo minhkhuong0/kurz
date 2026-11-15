@@ -19,6 +19,7 @@ var (
 func route(h *handlers.Handler) {
 	router := gin.Default()
 	router.GET("/api/url", h.GetUrls)
+	router.GET("/api/url/:code", h.GetCode)
 	router.POST("/api/url", h.PostUrl)
 
 	router.GET(":code", h.Redirect)

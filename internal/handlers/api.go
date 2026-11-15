@@ -42,6 +42,16 @@ func (h *Handler) GetUrls(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, urls)
 }
 
+func (h *Handler) GetCode(c *gin.Context) {
+	code := c.Param("code")
+	url, err := h.retrieveCode(code)
+	if err != nil {
+		c.String(http.StatusNotFound, "404 code not found\n")
+		return
+	}
+	c.IndentedJSON(http.StatusOK, url)
+}
+
 func (h *Handler) PostUrl(c *gin.Context) {
 	var rq postUrlRequest
 	if err := c.BindJSON(&rq); err != nil {
@@ -68,13 +78,13 @@ func (h *Handler) PostUrl(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, shortUrl)
 }
 
-func (h *Handler) retrieveCode(code string) (string, error) {
+func (h *Handler) retrieveCode(code string) (*repository.Shorturl, error) {
 	ctx := context.Background()
 	url, err := h.Repo.GetUrl(ctx, code)
 	if err != nil {
-		return "", fmt.Errorf("Code not in database: %w", err)
+		return nil, fmt.Errorf("Code not in database: %w", err)
 	}
-	return url.Url, nil
+	return &url, nil
 }
 
 func (h *Handler) Redirect(c *gin.Context) {
@@ -84,5 +94,5 @@ func (h *Handler) Redirect(c *gin.Context) {
 		c.String(http.StatusNotFound, "404 page not found\n")
 		return
 	}
-	c.Redirect(http.StatusMovedPermanently, url)
+	c.Redirect(http.StatusMovedPermanently, url.Url)
 }
