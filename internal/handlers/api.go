@@ -9,12 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 	"log"
+	"math/rand"
 	"net/http"
 	"time"
 )
 
 type Handler struct {
-	Repo db.UrlRepository
+	Repo           db.UrlRepository
+	DefaultLength  int
+	InsertAttempts int
 }
 
 type postUrlRequest struct {
@@ -27,6 +30,17 @@ func ToTimestamp(t time.Time) pgtype.Timestamp {
 		return pgtype.Timestamp{Valid: false}
 	}
 	return pgtype.Timestamp{Time: t, Valid: true}
+}
+
+const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+	"0123456789"
+
+func generateCode(length int) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(b)
 }
 
 func (h *Handler) GetUrls(c *gin.Context) {
@@ -61,30 +75,33 @@ func (h *Handler) PostUrl(c *gin.Context) {
 		return
 	}
 	ctx := context.Background()
-	shortUrl, err := h.Repo.CreateUrl(ctx, repository.CreateUrlParams{
-		Code:      "aaa",
-		Url:       rq.Url,
-		CreatedAt: ToTimestamp(time.Now()),
-		ExpiresAt: ToTimestamp(time.Now()),
-	})
-	if err != nil {
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"error": "Internal database error",
+	for i := 0; i < h.InsertAttempts; i++ {
+		shortUrl, err := h.Repo.CreateUrl(ctx, repository.CreateUrlParams{
+			Code:      generateCode(h.DefaultLength),
+			Url:       rq.Url,
+			CreatedAt: ToTimestamp(time.Now()),
+			ExpiresAt: ToTimestamp(time.Now()),
 		})
-		log.Printf("Error getting created url from database: %v", err)
-		return
+		if err == nil {
+			c.IndentedJSON(http.StatusCreated, shortUrl)
+			return
+		} else if i == h.InsertAttempts-1 {
+			c.IndentedJSON(http.StatusServiceUnavailable, gin.H{
+				"error": "Can't find free short code in database. Please try again.",
+			})
+			log.Printf("Error inserting to database: %v", err)
+			return
+		}
 	}
-
-	c.IndentedJSON(http.StatusCreated, shortUrl)
 }
 
-func (h *Handler) retrieveCode(code string) (*repository.Shorturl, error) {
+func (h *Handler) retrieveCode(code string) (repository.Shorturl, error) {
 	ctx := context.Background()
 	url, err := h.Repo.GetUrl(ctx, code)
 	if err != nil {
-		return nil, fmt.Errorf("Code not in database: %w", err)
+		return repository.Shorturl{}, fmt.Errorf("Code not in database: %w", err)
 	}
-	return &url, nil
+	return url, nil
 }
 
 func (h *Handler) Redirect(c *gin.Context) {

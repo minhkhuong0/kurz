@@ -7,7 +7,9 @@ import (
 	"forge.nhmk.de/khuong/kurz/internal/handlers"
 	"github.com/gin-gonic/gin"
 	"log"
+	"math/rand"
 	"os"
+	"time"
 )
 
 var (
@@ -17,6 +19,7 @@ var (
 )
 
 func route(h *handlers.Handler) {
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 	router := gin.Default()
 	router.GET("/api/url", h.GetUrls)
 	router.GET("/api/url/:code", h.GetCode)
@@ -49,5 +52,5 @@ func main() {
 	}
 	defer repo.Close()
 
-	route(&handlers.Handler{Repo: repo})
+	route(&handlers.Handler{Repo: repo, DefaultLength: 3, InsertAttempts: 3})
 }
