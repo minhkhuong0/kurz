@@ -68,7 +68,7 @@ pipeline {
       environment {
         FORGEJO_TOKEN = credentials('khuong-forge-pat')
       }
-      if (env.TAG_NAME) {
+      if (TAG_NAME) {
         environment {
           IMAGE_TAG = TAG_NAME
         }
