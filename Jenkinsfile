@@ -71,7 +71,7 @@ pipeline {
       steps {
         script {
           if (env.BRANCH_NAME ==~ /v\d+\.\d+\.\d+/) {
-            env.IMAGE_TAG = env.TAG_NAME
+            env.IMAGE_TAG = env.BRANCH_NAME
           } else {
             env.IMAGE_TAG = env.GIT_COMMIT
           }
