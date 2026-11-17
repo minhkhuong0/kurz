@@ -114,14 +114,16 @@ def updateGitOps(String overlayPath){
   dir('gitops-tmp') {
     deleteDir()
     sshagent(credentials: ['jenkins-github']) {
-      git url: 'git@github.com:minhkhuong0/homelab-iac.git', branch: 'main'
+      sh '''
+        export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+        git clone --depth 1 git@github.com:minhkhuong0/homelab-iac.git
+      '''
       dir('homelab-iac/kubernetes/deploy/kurz') {
         dir(overlayPath) {
           sh 'sed -i "s/Tag:.*/Tag: ${IMAGE_TAG}/g" kustomization.yaml'
         }
       }
       sh '''
-        export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
         git config --global user.name "Jenkins CI"
         git config --global user.email "khuong.nguyen@tutamail.com"
 
