@@ -124,6 +124,7 @@ def updateGitOps(String overlayPath){
         }
       }
       sh '''
+        ls -al
         git config --global user.name "Jenkins CI"
         git config --global user.email "khuong.nguyen@tutamail.com"
 
