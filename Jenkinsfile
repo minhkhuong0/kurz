@@ -121,7 +121,7 @@ def updateGitOps(String overlayPath){
 
         git clone git@github.com:minhkhuong0/homelab-iac.git
         cd homelab-iac/kubernetes/deploy/kurz
-        cd "${overlayPath}
+        cd "${overlayPath}"
 
         sed -i "s/Tag:.*/Tag: ${IMAGE_TAG}/g" kustomization.yaml
 
