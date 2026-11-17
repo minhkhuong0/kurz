@@ -70,7 +70,7 @@ pipeline {
       }
       steps {
         script {
-          if (env.TAG_NAME) {
+          if (env.BRANCH_NAME ==~ /v\d+\.\d+\.\d+/) {
             env.IMAGE_TAG = env.TAG_NAME
           } else {
             env.IMAGE_TAG = env.GIT_COMMIT
@@ -109,7 +109,7 @@ pipeline {
     }
     stage('Deploy to prod') {
       when {
-        buildingTag()
+        branch pattern: "v\\d+\\.\\d+\\.\\d+", comparator: "REGEXP"
       }
       steps {
         updateGitOps('prod')
