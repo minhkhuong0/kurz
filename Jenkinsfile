@@ -72,9 +72,9 @@ pipeline {
         env.IMAGE_TAG = env.TAG_NAME
       } else {
         env.IMAGE_TAG = env.GIT_COMMIT
+      }
       steps {
         container('buildkitd') {
-        }
           sh '''
             AUTH=$(echo -n "khuong:$FORGEJO_TOKEN" | base64 -w 0)
 
