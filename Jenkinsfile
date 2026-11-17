@@ -68,16 +68,14 @@ pipeline {
       environment {
         FORGEJO_TOKEN = credentials('khuong-forge-pat')
       }
-      if (TAG_NAME) {
-        environment {
-          IMAGE_TAG = TAG_NAME
-        }
-      } else {
-        environment {
-          IMAGE_TAG = GIT_COMMIT
-        }
-      }
       steps {
+        script {
+          if (env.TAG_NAME) {
+            env.IMAGE_TAG = env.TAG_NAME
+          } else {
+            env.IMAGE_TAG = env.GIT_COMMIT
+          }
+        }
         container('buildkitd') {
           sh '''
             AUTH=$(echo -n "khuong:$FORGEJO_TOKEN" | base64 -w 0)
