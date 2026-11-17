@@ -114,18 +114,18 @@ def updateGitOps(String overlayPath){
   dir('gitops-tmp') {
     deleteDir()
     sshagent(credentials: ['jenkins-github']) {
+      git url: 'git@github.com:minhkhuong0/homelab-iac.git', branch: 'main'
+      dir('homelab-iac/kubernetes/deploy/kurz') {
+        dir(overlayPath) {
+          sh 'sed -i "s/Tag:.*/Tag: ${IMAGE_TAG}/g" kustomization.yaml'
+        }
+      }
       sh '''
         export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
         git config --global user.name "Jenkins CI"
         git config --global user.email "khuong.nguyen@tutamail.com"
 
-        git clone git@github.com:minhkhuong0/homelab-iac.git
-        cd homelab-iac/kubernetes/deploy/kurz
-        cd "${overlayPath}"
-
-        sed -i "s/Tag:.*/Tag: ${IMAGE_TAG}/g" kustomization.yaml
-
-        git add kustomization.yaml
+        git add .
         git commit -m "ci: update kurz image tag to ${IMAGE_TAG}"
         git push origin main
       '''
