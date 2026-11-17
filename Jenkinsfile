@@ -70,6 +70,11 @@ pipeline {
       }
       steps {
         container('buildkitd') {
+        if (env.TAG_NAME) {
+          env.IMAGE_TAG = env.TAG_NAME
+        } else {
+          env.IMAGE_TAG = env.GIT_COMMIT
+        }
           sh '''
             AUTH=$(echo -n "khuong:$FORGEJO_TOKEN" | base64 -w 0)
 
@@ -87,33 +92,42 @@ pipeline {
               --frontend=dockerfile.v0 \
               --local context=. \
               --local dockerfile=. \
-              --output type=image,name=forge.nhmk.de/khuong/kurz:${GIT_COMMIT},push=true
+              --output type=image,name=forge.nhmk.de/khuong/kurz:${IMAGE_TAG},push=true
             '''
         }
       }
     }
-    stage('Update GitOps repo') {
-      when {
-        branch 'main'
-      }
+    stage('Deploy to dev') {
+      // when {
+      //   branch 'main'
+      // }
       steps {
-        sshagent(credentials: ['jenkins-github']) {
-          sh '''
-            export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
-            git config --global user.name "Jenkins CI"
-            git config --global user.email "khuong.nguyen@tutamail.com"
-
-            git clone git@github.com:minhkhuong0/homelab-iac.git
-            cd homelab-iac/kubernetes/deploy/kurz/dev
-
-            sed -i "s/Tag:.*/Tag: ${GIT_COMMIT}/g" kustomization.yaml
-
-            git add kustomization.yaml
-            git commit -m "ci: update kurz image tag to ${GIT_COMMIT}"
-            git push origin main
-          '''
+        updateGitOps('dev')
         }
       }
+    }
+  }
+}
+
+def updateGitOps(String overlayPath){
+  dir('gitops-tmp') {
+    deleteDir()
+    sshagent(credentials: ['jenkins-github']) {
+      sh '''
+        export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no"
+        git config --global user.name "Jenkins CI"
+        git config --global user.email "khuong.nguyen@tutamail.com"
+
+        git clone git@github.com:minhkhuong0/homelab-iac.git
+        cd homelab-iac/kubernetes/deploy/kurz
+        cd "${overlayPath}
+
+        sed -i "s/Tag:.*/Tag: ${IMAGE_TAG}/g" kustomization.yaml
+
+        git add kustomization.yaml
+        git commit -m "ci: update kurz image tag to ${IMAGE_TAG}"
+        git push origin main
+      '''
     }
   }
 }
