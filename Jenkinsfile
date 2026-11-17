@@ -100,11 +100,19 @@ pipeline {
       }
     }
     stage('Deploy to dev') {
-      // when {
-      //   branch 'main'
-      // }
+      when {
+        branch 'main'
+      }
       steps {
         updateGitOps('dev')
+      }
+    }
+    stage('Deploy to prod') {
+      when {
+        buildTag()
+      }
+      steps {
+        updateGitOps('prod')
       }
     }
   }
