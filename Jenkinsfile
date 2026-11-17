@@ -90,6 +90,8 @@ pipeline {
 ' "$AUTH" > "$DOCKER_CONFIG/config.json"
             '''
           sh '''
+            echo ${IMAGE_TAG}
+            echo ${TAG_NAME}
             buildctl build \
               --frontend=dockerfile.v0 \
               --local context=. \
