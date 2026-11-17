@@ -109,7 +109,7 @@ pipeline {
     }
     stage('Deploy to prod') {
       when {
-        buildTag()
+        buildingTag()
       }
       steps {
         updateGitOps('prod')
