@@ -7,6 +7,9 @@
 !go.mod
 !*.sql
 !*.yaml
+!*.html
+
+!frontend/**
 
 !README.md
 !LICENSE

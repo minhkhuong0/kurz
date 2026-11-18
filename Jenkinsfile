@@ -9,13 +9,19 @@ pipeline {
           - name: golang
             image: golang:alpine
             command:
-              - sleep
+            - sleep
             args:
-              - 99d
+            - 99d
+          - name: node
+            image: node:26-alpine
+            command:
+            - sleep
+            args:
+            - 99d
           - name: buildkitd
             image: moby/buildkit:master-rootless
             args:
-              - --oci-worker-no-process-sandbox
+            - --oci-worker-no-process-sandbox
             securityContext:
               seccompProfile:
                 type: Unconfined
@@ -24,11 +30,11 @@ pipeline {
               runAsUser: 1000
               runAsGroup: 1000
             volumeMounts:
-              - mountPath: /home/user/.local/share/buildkit
-                name: buildkitd
+            - mountPath: /home/user/.local/share/buildkit
+              name: buildkitd
           volumes:
-            - name: buildkitd
-              emptyDir: {}
+          - name: buildkitd
+            emptyDir: {}
           '''
     }
   }
@@ -56,7 +62,16 @@ pipeline {
         }
       }
     }
-    stage('Build api server') {
+    stage('Build frontend') {
+      steps {
+        container('node') {
+          sh 'apk add --no-cache make'
+          sh 'make frontend-install'
+          sh 'make frontend'
+        }
+      }
+    }
+    stage('Build server') {
       steps {
         container('golang') {
           sh 'apk add --no-cache make'

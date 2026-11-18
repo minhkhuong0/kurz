@@ -1,15 +1,19 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
+	"io/fs"
+	"log"
+	"math/rand"
+	"net/http"
+	"os"
+	"time"
+
 	"forge.nhmk.de/khuong/kurz/internal/db"
 	"forge.nhmk.de/khuong/kurz/internal/handlers"
 	"github.com/gin-gonic/gin"
-	"log"
-	"math/rand"
-	"os"
-	"time"
 )
 
 var (
@@ -18,12 +22,30 @@ var (
 	BuildDate = "unknown"
 )
 
+//go:embed frontend/dist
+var frontend embed.FS
+
 func route(h *handlers.Handler) {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	router := gin.Default()
 	router.GET("/api/url", h.GetUrls)
 	router.GET("/api/url/:code", h.GetCode)
 	router.POST("/api/url", h.PostUrl)
+
+	frontendFS, err := fs.Sub(frontend, "frontend/dist")
+	if err != nil {
+		log.Fatalf("Embedded frontend error: %v", err)
+	}
+	httpFS := http.FS(frontendFS)
+	router.GET("/", func(c *gin.Context) {
+		c.FileFromFS("/", httpFS)
+	})
+	router.GET("/favicon.ico", func(c *gin.Context) {
+		c.FileFromFS("/favicon.ico", httpFS)
+	})
+	router.GET("/assets/:name", func(c *gin.Context) {
+		c.FileFromFS("assets/"+c.Param("name"), httpFS)
+	})
 
 	router.GET(":code", h.Redirect)
 
