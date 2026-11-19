@@ -1,13 +1,10 @@
 package handlers
 
 import (
-	//"errors"
 	"context"
 	"fmt"
 	"forge.nhmk.de/khuong/kurz/internal/db"
-	"forge.nhmk.de/khuong/kurz/internal/repository"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgtype"
 	"log"
 	"math/rand"
 	"net/http"
@@ -23,13 +20,6 @@ type Handler struct {
 type postUrlRequest struct {
 	Url string `json:"url" binding:"required"`
 	Ttl string `json:"ttl"`
-}
-
-func ToTimestamp(t time.Time) pgtype.Timestamp {
-	if t.IsZero() {
-		return pgtype.Timestamp{Valid: false}
-	}
-	return pgtype.Timestamp{Time: t, Valid: true}
 }
 
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" +
@@ -76,14 +66,15 @@ func (h *Handler) PostUrl(c *gin.Context) {
 	}
 	ctx := context.Background()
 	for i := 0; i < h.InsertAttempts; i++ {
-		shortUrl, err := h.Repo.CreateUrl(ctx, repository.CreateUrlParams{
+		arg := db.CreateUrlParams{
 			Code:      generateCode(h.DefaultLength),
 			Url:       rq.Url,
-			CreatedAt: ToTimestamp(time.Now()),
-			ExpiresAt: ToTimestamp(time.Now()),
-		})
+			CreatedAt: time.Now(),
+			ExpiresAt: time.Now(),
+		}
+		err := h.Repo.CreateUrl(ctx, arg)
 		if err == nil {
-			c.IndentedJSON(http.StatusCreated, shortUrl)
+			c.IndentedJSON(http.StatusCreated, arg)
 			return
 		} else if i == h.InsertAttempts-1 {
 			c.IndentedJSON(http.StatusServiceUnavailable, gin.H{
@@ -95,11 +86,11 @@ func (h *Handler) PostUrl(c *gin.Context) {
 	}
 }
 
-func (h *Handler) retrieveCode(code string) (repository.Shorturl, error) {
+func (h *Handler) retrieveCode(code string) (db.Shorturl, error) {
 	ctx := context.Background()
 	url, err := h.Repo.GetUrl(ctx, code)
 	if err != nil {
-		return repository.Shorturl{}, fmt.Errorf("Code not in database: %w", err)
+		return db.Shorturl{}, fmt.Errorf("Code not in database: %w", err)
 	}
 	return url, nil
 }

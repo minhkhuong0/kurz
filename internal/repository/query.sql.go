@@ -11,11 +11,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createUrl = `-- name: CreateUrl :one
+const createUrl = `-- name: CreateUrl :exec
 INSERT INTO shorturls (
   code, url, created_at, expires_at )
 VALUES ($1, $2, $3, $4)
-RETURNING code, url, created_at, expires_at
 `
 
 type CreateUrlParams struct {
@@ -25,21 +24,14 @@ type CreateUrlParams struct {
 	ExpiresAt pgtype.Timestamp `json:"expires_at"`
 }
 
-func (q *Queries) CreateUrl(ctx context.Context, arg CreateUrlParams) (Shorturl, error) {
-	row := q.db.QueryRow(ctx, createUrl,
+func (q *Queries) CreateUrl(ctx context.Context, arg CreateUrlParams) error {
+	_, err := q.db.Exec(ctx, createUrl,
 		arg.Code,
 		arg.Url,
 		arg.CreatedAt,
 		arg.ExpiresAt,
 	)
-	var i Shorturl
-	err := row.Scan(
-		&i.Code,
-		&i.Url,
-		&i.CreatedAt,
-		&i.ExpiresAt,
-	)
-	return i, err
+	return err
 }
 
 const deleteUrl = `-- name: DeleteUrl :exec

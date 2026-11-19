@@ -7,7 +7,7 @@ DATE    ?= $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 LDFLAGS := -ldflags "-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(COMMIT) -X main.BuildDate=$(DATE)"
 
-.PHONY: api frontend run image fmt clean
+.PHONY: api frontend run image fmt clean pg
 server: frontend api
 
 api:
@@ -36,3 +36,8 @@ fmt:
 
 clean:
 	rm -r bin frontend/dist
+
+pg:
+	# export POSTGRESQL_URL='postgres://postgres:testtest@localhost:5432/test?sslmode=disable'
+	docker run --name pg -it --rm -p 5432:5432 -e POSTGRES_PASSWORD=testtest docker.io/postgres:18
+	docker exec pg psql -U postgres -c 'create database test;'

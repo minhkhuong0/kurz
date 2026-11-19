@@ -6,11 +6,10 @@ WHERE code = $1;
 SELECT * FROM shorturls
 ORDER BY created_at;
 
--- name: CreateUrl :one
+-- name: CreateUrl :exec
 INSERT INTO shorturls (
   code, url, created_at, expires_at )
-VALUES ($1, $2, $3, $4)
-RETURNING *;
+VALUES ($1, $2, $3, $4);
 
 -- name: DeleteUrl :exec
 DELETE FROM shorturls
